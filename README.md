@@ -1,5 +1,7 @@
 # 英日翻訳 - Browser Translation
 
+https://ilolio.github.io/enja-minimal-html/
+
 ブラウザ上で完結する英語⇔日本語の翻訳アプリです。サーバーへの送信は一切なく、すべてローカルで処理されます。
 
 ## 特徴
