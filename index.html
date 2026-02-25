@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英日翻訳 - LFM2-350M-ENJP-MT</title>
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  background: #f5f7fa;
+  color: #1a1a2e;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+header {
+  text-align: center;
+}
+
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+header p {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.lang-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  min-width: 80px;
+  text-align: center;
+}
+
+.swap-btn {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.swap-btn:hover {
+  background: #e5e7eb;
+}
+
+.swap-btn:active {
+  transform: scale(0.95);
+}
+
+.translation-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .translation-area {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+textarea {
+  width: 100%;
+  height: 360px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+  font-family: inherit;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+textarea[readonly] {
+  background: #fafafa;
+  color: #374151;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.btn {
+  padding: 10px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #6366f1;
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #4f46e5;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #d1d5db;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+#status-bar {
+  text-align: center;
+  margin-bottom: 6px;
+  min-height: 24px;
+}
+
+#status-text {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.progress-container {
+  display: none;
+  max-width: 400px;
+  margin: 0 auto 16px;
+}
+
+.progress-container.visible {
+  display: block;
+}
+
+.progress-bar-bg {
+  background: #e5e7eb;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  background: #6366f1;
+  height: 100%;
+  border-radius: 999px;
+  width: 0%;
+  transition: width 0.3s;
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.device-info {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.device-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.device-badge.webgpu {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.device-badge.wasm {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+footer {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+footer a {
+  color: #6366f1;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+.cache-section {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.btn-small {
+  padding: 6px 16px;
+  font-size: 0.8rem;
+}
+
+.auto-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.auto-toggle label {
+  font-size: 0.85rem;
+  color: #374151;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #d1d5db;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: #6366f1;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>英日翻訳</h1>
+    <p>LFM2-350M-ENJP-MT + Transformers.js v4 (ブラウザ上で動作)</p>
+  </header>
+
+  <div id="status-bar">
+    <span id="status-text">初期化中...</span>
+  </div>
+
+  <div class="progress-container" id="progress-container">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-label" id="progress-label"></div>
+  </div>
+
+  <div class="controls">
+    <span class="lang-label" id="src-lang">English</span>
+    <button class="swap-btn" id="swap-btn" title="言語を入れ替え">&hArr;</button>
+    <span class="lang-label" id="tgt-lang">日本語</span>
+  </div>
+
+  <div class="translation-area">
+    <div class="panel">
+      <label id="input-label">入力 (English)</label>
+      <textarea id="input-text" placeholder="翻訳するテキストを入力..."></textarea>
+    </div>
+    <div class="panel">
+      <label id="output-label">出力 (日本語)</label>
+      <textarea id="output-text" readonly placeholder="翻訳結果がここに表示されます"></textarea>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="translate-btn" disabled>翻訳</button>
+    <button class="btn btn-secondary" id="clear-btn">クリア</button>
+  </div>
+
+  <div class="auto-toggle">
+    <label for="auto-translate">自動翻訳</label>
+    <label class="toggle-switch">
+      <input type="checkbox" id="auto-translate" checked>
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <div class="device-info">
+    <span id="device-badge" class="device-badge"></span>
+  </div>
+
+  <div class="cache-section">
+    <button class="btn btn-secondary btn-small" id="clear-cache-btn">モデルのキャッシュを削除</button>
+  </div>
+
+  <footer>
+    Model: <a href="https://huggingface.co/onnx-community/LFM2-350M-ENJP-MT-ONNX" target="_blank" rel="noopener">onnx-community/LFM2-350M-ENJP-MT-ONNX</a>
+    &middot; Powered by <a href="https://huggingface.co/docs/transformers.js" target="_blank" rel="noopener">Transformers.js</a>
+  </footer>
+</div>
+
+<script type="module">
+const worker = new Worker("./worker.js", { type: "module" });
+
+const statusText = document.getElementById("status-text");
+const progressContainer = document.getElementById("progress-container");
+const progressFill = document.getElementById("progress-fill");
+const progressLabel = document.getElementById("progress-label");
+const deviceBadge = document.getElementById("device-badge");
+const translateBtn = document.getElementById("translate-btn");
+const clearBtn = document.getElementById("clear-btn");
+const swapBtn = document.getElementById("swap-btn");
+const inputText = document.getElementById("input-text");
+const outputText = document.getElementById("output-text");
+const srcLang = document.getElementById("src-lang");
+const tgtLang = document.getElementById("tgt-lang");
+const inputLabel = document.getElementById("input-label");
+const outputLabel = document.getElementById("output-label");
+
+const autoTranslateToggle = document.getElementById("auto-translate");
+
+let direction = "en2ja"; // "en2ja" or "ja2en"
+let isTranslating = false;
+let autoTranslateTimer = null;
+
+// Detect WebGPU
+async function detectDevice() {
+  if (navigator.gpu) {
+    try {
+      const adapter = await navigator.gpu.requestAdapter();
+      if (adapter) return "webgpu";
+    } catch {}
+  }
+  return "wasm";
+}
+
+async function getCachedFiles() {
+  const cached = new Set();
+  const keys = await caches.keys();
+  for (const key of keys.filter(k => k.startsWith("transformers"))) {
+    const cache = await caches.open(key);
+    const requests = await cache.keys();
+    for (const req of requests) {
+      cached.add(req.url);
+    }
+  }
+  return cached;
+}
+
+async function init() {
+  const device = await detectDevice();
+
+  if (device === "webgpu") {
+    deviceBadge.textContent = "WebGPU";
+    deviceBadge.className = "device-badge webgpu";
+  } else {
+    deviceBadge.textContent = "WASM (CPU)";
+    deviceBadge.className = "device-badge wasm";
+  }
+
+  cachedFiles = await getCachedFiles();
+  worker.postMessage({ type: "load", device, dtype: "q4" });
+}
+
+// Track download progress per file
+let cachedFiles = new Set();
+const fileLoaded = {};
+
+worker.addEventListener("message", (e) => {
+  const msg = e.data;
+
+  switch (msg.type) {
+    case "status":
+      statusText.textContent = msg.message;
+      break;
+
+    case "progress":
+      handleProgress(msg);
+      break;
+
+    case "ready":
+      statusText.textContent = "翻訳の準備ができました";
+      progressContainer.classList.remove("visible");
+      translateBtn.disabled = false;
+      break;
+
+    case "translate_start":
+      outputText.value = "";
+      isTranslating = true;
+      clearBtn.textContent = "推論中断";
+      clearBtn.classList.replace("btn-secondary", "btn-danger");
+      break;
+
+    case "stream":
+      outputText.value += msg.text;
+      break;
+
+    case "translate_end":
+      outputText.value = msg.text;
+      isTranslating = false;
+      translateBtn.disabled = false;
+      statusText.textContent = msg.aborted ? "翻訳を中断しました" : "翻訳完了";
+      clearBtn.textContent = "クリア";
+      clearBtn.classList.replace("btn-danger", "btn-secondary");
+      break;
+
+    case "error":
+      statusText.textContent = "エラー: " + msg.message;
+      isTranslating = false;
+      translateBtn.disabled = false;
+      clearBtn.textContent = "クリア";
+      clearBtn.classList.replace("btn-danger", "btn-secondary");
+      break;
+  }
+});
+
+function formatBytes(bytes) {
+  if (bytes >= 1e9) return (bytes / 1e9).toFixed(1) + " GB";
+  if (bytes >= 1e6) return (bytes / 1e6).toFixed(0) + " MB";
+  if (bytes >= 1e3) return (bytes / 1e3).toFixed(0) + " KB";
+  return bytes + " B";
+}
+
+function isFileCached(file) {
+  for (const url of cachedFiles) {
+    if (url.endsWith("/" + file)) return true;
+  }
+  return false;
+}
+
+function handleProgress(msg) {
+  if (msg.status === "download" || msg.status === "progress") {
+    progressContainer.classList.add("visible");
+
+    if (msg.file && !isFileCached(msg.file)) {
+      if (msg.loaded) fileLoaded[msg.file] = msg.loaded;
+
+      const downloaded = Object.values(fileLoaded).reduce((a, b) => a + b, 0);
+      if (downloaded > 0) {
+        progressLabel.textContent = `ダウンロード中... (${formatBytes(downloaded)} /約500MB)`;
+      } else {
+        progressLabel.textContent = "ダウンロード中...";
+      }
+    }
+
+    if (msg.progress != null) {
+      progressFill.style.width = msg.progress.toFixed(1) + "%";
+    }
+  } else if (msg.status === "done") {
+    // done
+  } else if (msg.status === "initiate") {
+    progressContainer.classList.add("visible");
+    if (msg.file) {
+      statusText.textContent = `読み込み中: ${msg.file}`;
+    }
+  }
+}
+
+function updateLabels() {
+  if (direction === "en2ja") {
+    srcLang.textContent = "English";
+    tgtLang.textContent = "日本語";
+    inputLabel.textContent = "入力 (English)";
+    outputLabel.textContent = "出力 (日本語)";
+    inputText.placeholder = "Enter text to translate...";
+    outputText.placeholder = "翻訳結果がここに表示されます";
+  } else {
+    srcLang.textContent = "日本語";
+    tgtLang.textContent = "English";
+    inputLabel.textContent = "入力 (日本語)";
+    outputLabel.textContent = "出力 (English)";
+    inputText.placeholder = "翻訳するテキストを入力...";
+    outputText.placeholder = "Translation will appear here";
+  }
+}
+
+translateBtn.addEventListener("click", () => {
+  const text = inputText.value.trim();
+  if (!text || isTranslating) return;
+
+  translateBtn.disabled = true;
+  statusText.textContent = "翻訳中...";
+  outputText.value = "";
+
+  worker.postMessage({ type: "translate", text, direction });
+});
+
+clearBtn.addEventListener("click", () => {
+  if (isTranslating) {
+    worker.postMessage({ type: "abort" });
+    return;
+  }
+  inputText.value = "";
+  outputText.value = "";
+  statusText.textContent = "翻訳の準備ができました";
+});
+
+swapBtn.addEventListener("click", () => {
+  direction = direction === "en2ja" ? "ja2en" : "en2ja";
+  updateLabels();
+
+  const prevOutput = outputText.value;
+  if (prevOutput) {
+    inputText.value = prevOutput;
+    outputText.value = "";
+    // Re-translate with new direction
+    if (!isTranslating) {
+      translateBtn.click();
+    }
+  }
+});
+
+// Allow Ctrl+Enter to translate
+inputText.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+    e.preventDefault();
+    translateBtn.click();
+  }
+});
+
+// Auto-translate on input with debounce
+inputText.addEventListener("input", () => {
+  if (!autoTranslateToggle.checked) return;
+  clearTimeout(autoTranslateTimer);
+  if (!inputText.value.trim()) {
+    outputText.value = "";
+    return;
+  }
+  autoTranslateTimer = setTimeout(() => {
+    if (!isTranslating && inputText.value.trim()) {
+      translateBtn.click();
+    }
+  }, 500);
+});
+
+document.getElementById("clear-cache-btn").addEventListener("click", async () => {
+  if (!confirm("モデルのキャッシュを削除しますか？\n次回アクセス時に再ダウンロードが必要になります。")) return;
+  const keys = await caches.keys();
+  const deleted = await Promise.all(
+    keys.filter((k) => k.startsWith("transformers")).map((k) => caches.delete(k))
+  );
+  if (deleted.some(Boolean)) {
+    statusText.textContent = "キャッシュを削除しました。ページを再読み込みしてください。";
+  } else {
+    statusText.textContent = "削除するキャッシュが見つかりませんでした。";
+  }
+});
+
+updateLabels();
+init();
+</script>
+</body>
+</html>
