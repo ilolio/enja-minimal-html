@@ -326,13 +326,67 @@ footer a:hover {
 .toggle-switch input:checked + .toggle-slider::before {
   transform: translateX(20px);
 }
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.visible {
+  display: flex;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px 32px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #1a1a2e;
+}
+
+.modal p {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
 </style>
 </head>
 <body>
+<div class="modal-overlay" id="download-confirm-overlay">
+  <div class="modal">
+    <h2>モデルのダウンロード</h2>
+    <p>翻訳モデルを初めてダウンロードします。<br>約500MBのデータが必要です。よろしいですか？</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="download-cancel-btn">キャンセル</button>
+      <button class="btn btn-primary" id="download-confirm-btn">ダウンロードする</button>
+    </div>
+  </div>
+</div>
+
 <div class="container">
   <header>
     <h1>英日翻訳</h1>
-    <p>LFM2-350M-ENJP-MT + Transformers.js v4 (ブラウザ上で動作)</p>
+    <p>LFM2-350M-ENJP-MT(q4) + Transformers.js v4 (ブラウザ上で動作)</p>
   </header>
 
   <div id="status-bar">
@@ -438,6 +492,23 @@ async function getCachedFiles() {
   return cached;
 }
 
+function showDownloadConfirmation() {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById("download-confirm-overlay");
+    overlay.classList.add("visible");
+
+    document.getElementById("download-confirm-btn").addEventListener("click", () => {
+      overlay.classList.remove("visible");
+      resolve(true);
+    }, { once: true });
+
+    document.getElementById("download-cancel-btn").addEventListener("click", () => {
+      overlay.classList.remove("visible");
+      resolve(false);
+    }, { once: true });
+  });
+}
+
 async function init() {
   const device = await detectDevice();
 
@@ -450,6 +521,15 @@ async function init() {
   }
 
   cachedFiles = await getCachedFiles();
+
+  if (cachedFiles.size === 0) {
+    const confirmed = await showDownloadConfirmation();
+    if (!confirmed) {
+      statusText.textContent = "ダウンロードをキャンセルしました。翻訳を使用するにはページを再読み込みしてください。";
+      return;
+    }
+  }
+
   worker.postMessage({ type: "load", device, dtype: "q4" });
 }
 
